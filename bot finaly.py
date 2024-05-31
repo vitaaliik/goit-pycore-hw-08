@@ -150,13 +150,13 @@ def add_contact(args, book):
 def change_contact(args, book):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
-    if int(new_phone):
-        if record:
-            if record.change_phone(old_phone, new_phone):
-                return "Phone number updated."
-            return "Phone number not found."
-        return "Contact not found."
-    return "Phone is invalid"
+    if not new_phone.isdigit() or len(new_phone) != 10:
+        return "Phone number must be 10 digits."
+    if record:
+        if record.change_phone(old_phone, new_phone):
+            return "Phone number updated."
+        return "Phone number not found."
+    return "Contact not found."
 
 
 @input_error
