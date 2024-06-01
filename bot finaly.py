@@ -12,9 +12,14 @@ class Name(Field):
 
 class Phone(Field):
     def __init__(self, value):
-        if not value.isdigit() or len(value) != 10:
+        if not self.validate_phone(value):
             raise ValueError("Phone number must be 10 digits.")
         self.value = value
+
+    @staticmethod
+    def validate_phone(value):
+        return value.isdigit() and len(value) == 10
+
 
 
 class Birthday(Field):
@@ -35,11 +40,18 @@ class Record:
         self.phones.append(Phone(phone))
 
     def change_phone(self, old_phone, new_phone):
+        old_phone_obj = self.find_phone(old_phone)
+        if old_phone_obj is None:
+            raise ValueError("Old phone number not found")
+        if not Phone.validate_phone(new_phone):
+            raise ValueError("Invalid new phone number format")
+        old_phone_obj.value = new_phone
+
+    def find_phone(self, phone_value):
         for phone in self.phones:
-            if phone.value == old_phone:
-                phone.value = new_phone
-                return True
-        return False
+            if phone.value == phone_value:
+                return phone
+        return None
 
     def add_birthday(self, birthday):
         self.birthday = Birthday(birthday)
@@ -150,12 +162,9 @@ def add_contact(args, book):
 def change_contact(args, book):
     name, old_phone, new_phone, *_ = args
     record = book.find(name)
-    if not new_phone.isdigit() or len(new_phone) != 10:
-        return "Phone number must be 10 digits."
     if record:
-        if record.change_phone(old_phone, new_phone):
-            return "Phone number updated."
-        return "Phone number not found."
+        record.change_phone(old_phone, new_phone)
+        return "Phone number updated."
     return "Contact not found."
 
 
